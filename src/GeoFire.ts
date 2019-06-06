@@ -12,6 +12,16 @@
 import { GeoQuery } from './GeoQuery';
 import { decodeGeoFireObject, distance, encodeGeoFireObject, encodeGeohash, validateLocation, validateKey } from './utils';
 import { GeoFireTypes } from './GeoFireTypes';
+import {map as Rmap}  from 'ramda'
+
+type element = {
+  key: string,
+  location: {
+    lat: number,
+    lng: number
+  },
+  [x: string]: any
+}
 
 /**
  * Creates a GeoFire instance.
@@ -37,14 +47,20 @@ export class GeoFire {
    * @param key The key of the location to retrieve.
    * @returns A promise that is fulfilled with the location of the given key.
    */
-  public get(key: string): Promise<number[]> {
+  public get(key: string) {
     validateKey(key);
-    return this._firebaseRef.child(key).once('value').then((dataSnapshot: GeoFireTypes.firebase.DataSnapshot) => {
+    return this._firebaseRef
+    .child(key)
+    .once('value')
+    .then((dataSnapshot: GeoFireTypes.firebase.DataSnapshot) => {
       const snapshotVal = dataSnapshot.val();
       if (snapshotVal === null) {
         return null;
       } else {
-        return decodeGeoFireObject(snapshotVal);
+        return {
+          location: decodeGeoFireObject(snapshotVal),
+          ...snapshotVal
+        };
       }
     });
   }
@@ -67,7 +83,7 @@ export class GeoFire {
    * @returns A promise that is fulfilled after the inputted key is removed.
    */
   public remove(key: string): Promise<string> {
-    return this.set(key, null);
+    return this._firebaseRef.remove();
   }
 
   /**
@@ -80,39 +96,22 @@ export class GeoFire {
    * @param location The [latitude, longitude] pair to add.
    * @returns A promise that is fulfilled when the write is complete.
    */
-  public set(keyOrLocations: string | any, location?: number[]): Promise<any> {
-    let locations;
-    if (typeof keyOrLocations === 'string' && keyOrLocations.length !== 0) {
-      // If this is a set for a single location, convert it into a object
-      locations = {};
-      locations[keyOrLocations] = location;
-    } else if (typeof keyOrLocations === 'object') {
-      if (typeof location !== 'undefined') {
-        throw new Error('The location argument should not be used if you pass an object to set().');
+
+  public set(data: element[]): Promise<any> {
+
+    const toDocument = ({key, location: l, ...rest}: element) => {
+      const s = [l.lat, l.lng]
+
+      validateKey(key)
+      validateLocation(s)
+
+      const encoded: GeoFireTypes.Document = encodeGeoFireObject(s, encodeGeohash(s))
+      return {
+        [key]: encoded,
+        ...rest
       }
-      locations = keyOrLocations;
-    } else {
-      throw new Error('keyOrLocations must be a string or a mapping of key - location pairs.');
     }
-
-    const newData = {};
-
-    Object.keys(locations).forEach((key) => {
-      validateKey(key);
-
-      const location: number[] = locations[key];
-      if (location === null) {
-        // Setting location to null is valid since it will remove the key
-        newData[key] = null;
-      } else {
-        validateLocation(location);
-
-        const geohash: string = encodeGeohash(location);
-        newData[key] = encodeGeoFireObject(location, geohash);
-      }
-    });
-
-    return this._firebaseRef.update(newData);
+    return this._firebaseRef.update(Rmap(toDocument, data));
   }
 
   /**

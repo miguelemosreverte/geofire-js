@@ -1,6 +1,6 @@
 {
   "name": "geofire",
-  "description": "Location-based querying and filtering using Firebase",
+  "description": "Location-based querying and filtering using Firebase [with MUCH improved set function. Visit the code! :D]",
   "version": "5.0.1",
   "scripts": {
     "build": "rollup -c",
@@ -9,14 +9,14 @@
     "test": "nyc --reporter=html --reporter=text mocha",
     "prepare": "npm run build"
   },
-  "author": "Firebase (https://firebase.google.com/)",
-  "homepage": "https://github.com/firebase/geofire-js/",
+  "author": "miguelemosreverte",
+  "homepage": "https://github.com/miguelemosreverte/geofire-js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/firebase/geofire-js.git"
+    "url": "https://github.com/miguelemosreverte/geofire-js.git"
   },
   "bugs": {
-    "url": "https://github.com/firebase/geofire-js/issues"
+    "url": "https://github.com/miguelemosreverte/geofire-js/issues"
   },
   "license": "MIT",
   "keywords": [
@@ -37,7 +37,10 @@
     "package.json"
   ],
   "dependencies": {
-    "@firebase/database-types": "0.x.x"
+    "@firebase/database-types": "0.x.x",
+    "@types/ramda": "^0.26.9",
+    "grpc": "^1.11.3",
+    "ramda": "^0.26.1"
   },
   "peerDependencies": {
     "firebase": "^2.4.0 || 3.x.x || 4.x.x || 5.x.x"
