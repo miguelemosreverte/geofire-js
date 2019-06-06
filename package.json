@@ -1,5 +1,5 @@
 {
-  "name": "geofire",
+  "name": "improved_geofire",
   "description": "Location-based querying and filtering using Firebase [with MUCH improved set function. Visit the code! :D]",
   "version": "5.0.1",
   "scripts": {
