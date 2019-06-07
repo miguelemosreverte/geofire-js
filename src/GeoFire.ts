@@ -97,21 +97,27 @@ export class GeoFire {
    * @returns A promise that is fulfilled when the write is complete.
    */
 
-  public set(data: element[]): Promise<any> {
+  public set(data: 
+    {
+      key: string,  location: {
+                      lat: number,
+                      lng: number
+                    },
+      [x: string]: any
+    }[]): Promise<any> {
 
     function toDocument ({key, location: l, ...rest}: element) {
       const s = [l.lat, l.lng]
 
       validateKey(key)
       validateLocation(s)
-
+      
       const encoded: GeoFireTypes.Document = encodeGeoFireObject(s, encodeGeohash(s))
+
       return {
-        [key]: encoded,
-        ...rest
+        [key]: {...encoded, ...rest}
       }
     }
-    
     return this._firebaseRef.update(mergeAll(map(toDocument, data)));
   }
 
