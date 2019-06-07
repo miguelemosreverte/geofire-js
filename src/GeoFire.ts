@@ -12,7 +12,7 @@
 import { GeoQuery } from './GeoQuery';
 import { decodeGeoFireObject, distance, encodeGeoFireObject, encodeGeohash, validateLocation, validateKey } from './utils';
 import { GeoFireTypes } from './GeoFireTypes';
-import {map as Rmap}  from 'ramda'
+import {map, mergeAll}  from 'ramda'
 
 type element = {
   key: string,
@@ -99,7 +99,7 @@ export class GeoFire {
 
   public set(data: element[]): Promise<any> {
 
-    const toDocument = ({key, location: l, ...rest}: element) => {
+    function toDocument ({key, location: l, ...rest}: element) {
       const s = [l.lat, l.lng]
 
       validateKey(key)
@@ -111,7 +111,8 @@ export class GeoFire {
         ...rest
       }
     }
-    return this._firebaseRef.update(Rmap(toDocument, data));
+    
+    return this._firebaseRef.update(mergeAll(map(toDocument, data)));
   }
 
   /**
